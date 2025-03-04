@@ -1,0 +1,10 @@
+node_modules
+dist
+migrations
+
+.env
+.env.example
+
+error.log
+combined.log
+
