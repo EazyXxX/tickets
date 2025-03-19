@@ -47,5 +47,3 @@ async function startServer() {
 startServer().catch((error) => {
   logger.error("Failed to start server:", error);
 });
-
-//TODO Нужно доделать функционал связанный с access и refresh токенами

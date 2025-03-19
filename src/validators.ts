@@ -5,7 +5,7 @@ const userRoleEnum = z.enum(["USER", "ADMIN"]);
 
 const userSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6), // Example: password must be at least 6 characters
+  password: z.string().min(6),
   name: z.string().optional(),
   role: userRoleEnum.optional().default("USER"),
 });

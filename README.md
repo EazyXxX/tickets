@@ -21,3 +21,12 @@
 4. `npm run dev` for development mode
 
 5. `npm run build` to build the app for production
+
+You should also add .env file with PORT and DATABASE_URL variables in order to start this app.
+
+Example:
+
+```
+DATABASE_URL="postgresql://postgres:postgres@localhost:5435/tickets?schema=public"
+PORT=3000
+```
