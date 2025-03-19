@@ -8,28 +8,39 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
   name      String?
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      UserRole @default(USER)
+  tickets   Ticket[] @relation("author")
+
+  @@map("users")
 }
 
-model Book {
-  id          String   @id @default(uuid())
-  title       String
-  author      String
-  year        Int
-  genre       String
-  isbn        String   @unique
-  description String
-  pages       Int
-  language    String
-  rating      Float
-  status      String
-  coverUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Ticket {
+  id           Int          @id @default(autoincrement())
+  subject      String
+  content      String
+  status       TicketStatus @default(NEW)
+  resolution   String?
+  cancelReason String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  authorId     Int
+  author       User         @relation(fields: [authorId], references: [id], name: "author")
+
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }

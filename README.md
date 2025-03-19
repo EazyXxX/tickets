@@ -1,6 +1,6 @@
-# National championate backend
+# Ticktes backend
 
-### A backend part of the national championship web-app
+### A backend part of the tickets app
 
 ## How to run the app?
 
@@ -21,7 +21,3 @@
 4. `npm run dev` for development mode
 
 5. `npm run build` to build the app for production
-
-## App's features:
-
--

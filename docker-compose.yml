@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: national_championate
+      POSTGRES_DB: tickets
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
