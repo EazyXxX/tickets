@@ -48,10 +48,15 @@ Just put the received token in `Authorization` header and continue testing this 
 ##### Ticket Management
 
 Create Ticket: Add a new ticket with subject and content
+
 Take Ticket: Change ticket status to IN_PROGRESS (owner or admin)
+
 Complete Ticket: Mark ticket as completed with resolution (owner or admin)
+
 Cancel Ticket: Cancel ticket with cancelReason (owner or admin)
+
 Fetch Tickets: Retrieve tickets by date, startDate, or endDate (admins see all, users see their own)
+
 Bulk Cancel: Admins can cancel all IN_PROGRESS tickets
 
 ##### User Roles
