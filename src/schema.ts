@@ -5,7 +5,7 @@ export const typeDefs = gql`
 
   type Query {
     me: User
-    tickets(date: String, startDate: String, endDate: String): [Ticket!]!
+    tickets(date: DateTime, startDate: DateTime, endDate: DateTime): [Ticket!]!
   }
 
   type Mutation {

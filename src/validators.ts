@@ -10,8 +10,6 @@ const userSchema = z.object({
   role: userRoleEnum.optional().default("USER"),
 });
 
-const partialUserSchema = userSchema.partial();
-
 const signupInputSchema = userSchema.pick({
   email: true,
   password: true,
@@ -34,8 +32,6 @@ const ticketSchema = z.object({
   resolution: z.string().optional(),
   cancelReason: z.string().optional(),
 });
-
-const partialTicketSchema = ticketSchema.partial();
 
 const createTicketInputSchema = ticketSchema.pick({
   subject: true,

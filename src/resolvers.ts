@@ -29,12 +29,16 @@ export const resolvers = {
       if (!user) throw new GraphQLError("Not authenticated");
 
       let whereClause: any = {
-        // Admins can see all tickets, users see only their own
         authorId: user.role === UserRole.ADMIN ? undefined : user.id,
       };
 
       if (date) {
         const searchDate = new Date(date);
+        if (isNaN(searchDate.getTime())) {
+          throw new GraphQLError(
+            "Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)."
+          );
+        }
         whereClause.createdAt = {
           gte: new Date(searchDate.setHours(0, 0, 0, 0)),
           lt: new Date(searchDate.setHours(23, 59, 59, 999)),
@@ -42,14 +46,24 @@ export const resolvers = {
       }
 
       if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          throw new GraphQLError(
+            "Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)."
+          );
+        }
         whereClause.createdAt = {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: start,
+          lte: end,
         };
       }
 
       return prisma.ticket.findMany({
         where: whereClause,
+        include: {
+          author: true,
+        },
         orderBy: { createdAt: "desc" },
       });
     },
@@ -106,16 +120,30 @@ export const resolvers = {
       { prisma, user }: Context
     ) => {
       if (!user) throw new GraphQLError("Not authenticated");
+
       const validatedInput = validateCreateTicketInput(args);
 
-      return prisma.ticket.create({
+      const ticket = await prisma.ticket.create({
         data: {
           subject: validatedInput.subject,
           content: validatedInput.content,
           status: TicketStatus.NEW,
           authorId: user.id,
         },
+        include: {
+          author: {
+            include: {
+              tickets: true,
+            },
+          },
+        },
       });
+
+      if (!ticket.author) {
+        throw new GraphQLError("Author not found for the created ticket");
+      }
+
+      return ticket;
     },
 
     takeTicket: async (
@@ -125,7 +153,12 @@ export const resolvers = {
     ) => {
       if (!user) throw new GraphQLError("Not authenticated");
 
-      const ticket = await prisma.ticket.findUnique({ where: { id } });
+      const ticket = await prisma.ticket.findUnique({
+        where: { id },
+        include: {
+          author: true,
+        },
+      });
       if (!ticket) throw new GraphQLError("Ticket not found");
 
       if (user.role !== UserRole.ADMIN && ticket.authorId !== user.id) {
@@ -135,6 +168,13 @@ export const resolvers = {
       return prisma.ticket.update({
         where: { id },
         data: { status: TicketStatus.IN_PROGRESS },
+        include: {
+          author: {
+            include: {
+              tickets: true,
+            },
+          },
+        },
       });
     },
 
@@ -145,7 +185,16 @@ export const resolvers = {
     ) => {
       if (!user) throw new GraphQLError("Not authenticated");
 
-      const ticket = await prisma.ticket.findUnique({ where: { id } });
+      const ticket = await prisma.ticket.findUnique({
+        where: { id },
+        include: {
+          author: {
+            include: {
+              tickets: true,
+            },
+          },
+        },
+      });
       if (!ticket) throw new GraphQLError("Ticket not found");
 
       if (user.role !== UserRole.ADMIN && ticket.authorId !== user.id) {
@@ -159,6 +208,13 @@ export const resolvers = {
           status: TicketStatus.COMPLETED,
           resolution: validatedInput.resolution,
         },
+        include: {
+          author: {
+            include: {
+              tickets: true,
+            },
+          },
+        },
       });
     },
 
@@ -169,7 +225,16 @@ export const resolvers = {
     ) => {
       if (!user) throw new GraphQLError("Not authenticated");
 
-      const ticket = await prisma.ticket.findUnique({ where: { id } });
+      const ticket = await prisma.ticket.findUnique({
+        where: { id },
+        include: {
+          author: {
+            include: {
+              tickets: true,
+            },
+          },
+        },
+      });
       if (!ticket) throw new GraphQLError("Ticket not found");
 
       if (user.role !== UserRole.ADMIN && ticket.authorId !== user.id) {
@@ -183,6 +248,13 @@ export const resolvers = {
           status: TicketStatus.CANCELLED,
           cancelReason: validatedInput.cancelReason,
         },
+        include: {
+          author: {
+            include: {
+              tickets: true,
+            },
+          },
+        },
       });
     },
 
@@ -191,6 +263,11 @@ export const resolvers = {
       _args: any,
       { prisma, user }: Context
     ) => {
+      //NOTE Making current user admin for testing purposes
+      // await prisma.user.update({
+      //   where: { id: user.id },
+      //   data: { role: UserRole.ADMIN },
+      // });
       if (!user || user.role !== UserRole.ADMIN) {
         throw new GraphQLError("Unauthorized to perform bulk cancellation");
       }
@@ -204,6 +281,14 @@ export const resolvers = {
       });
 
       return { message: `Cancelled ${result.count} tickets` };
+    },
+  },
+
+  User: {
+    tickets: async (user: any, _args: any, { prisma }: Context) => {
+      return prisma.ticket.findMany({
+        where: { authorId: user.id },
+      });
     },
   },
 };
